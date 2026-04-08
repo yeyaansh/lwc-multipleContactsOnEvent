@@ -1,0 +1,60 @@
+.flexAlignCenterWithBorder {
+    display: flex;
+    align-items: center;
+    border: black 1px solid;
+    border-radius: 5px;
+    padding: 3px 6px;
+    background-color: white;
+}
+
+.wrapperFlexAlignCenter {
+    flex: 1;
+    margin-left: 5px;
+    --slds-c-input-color-border: transparent;
+    --slds-c-input-shadow: none;
+    --slds-c-input-shadow-focus: 0 0 0 0 transparent;
+    --slds-c-input-color-border-focus: #ccc;
+    /* light border on focus */
+}
+
+.spaceBetweenSearchInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.spaceAroundInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: space-around;
+}
+
+.searchListBody {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    background-color: white;
+}
+
+.searchListEachItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid transparent;
+    padding: 3px 6px;
+    border-radius: 5px;
+}
+
+.searchListEachItem:hover {
+    background-color: rgb(199, 229, 255);
+    cursor: pointer;
+
+}
+
+.paddingFlexPill {
+    padding-top: .5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+}

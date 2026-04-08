@@ -1,0 +1,181 @@
+<template>
+
+    <div class="spaceAroundInputs">
+        <!-- Subject -->
+        <div>
+                <lightning-combobox name="subject" label="Subject" value={subjectSelectedValue} options={subjectOptions} onchange={handleValueChange} ></lightning-combobox>
+        </div>
+
+        <!-- Start -->
+        <div>
+            <lightning-input required="true" type="datetime" value={startDateTime} name="startTime"
+                label="Start"></lightning-input>
+        </div>
+
+        <!-- End -->
+        <div>
+            <lightning-input value={endDateTime} required="true" type="datetime" name="endTime"
+                label="End"></lightning-input>
+        </div>
+
+        <!-- AllDayEvent -->
+        <div>
+            <lightning-input type="checkbox" label="All Day Event" value={allDayEvent}
+                name="allDayEvent"></lightning-input>
+        </div>
+
+
+        <div class="spaceBetweenSearchInputs">
+            <!-- ConLead Name -->
+            <div>
+                <label>Name</label>
+                <div class="flexAlignCenterWithBorder">
+
+                    <div>
+                        <lightning-icon lwc:if={isContact} icon-name="standard:contact"
+                            alternative-text="Contact Logo"></lightning-icon>
+                        <lightning-icon lwc:if={isLead} icon-name="standard:lead"
+                            alternative-text="Lead Logo"></lightning-icon>
+                        <lightning-button-menu value={isContactOrLeadSelected} name="isContactOrLead"
+                            alternative-text="Show menu" variant="bare" onselect={handleConLeadSelect}>
+                            <lightning-menu-item prefix-icon-name="standard:contact" value="contact"
+                                label="Contacts"></lightning-menu-item>
+                            <lightning-menu-item prefix-icon-name="standard:lead" value="lead"
+                                label="Leads"></lightning-menu-item>
+                        </lightning-button-menu>
+                    </div>
+                    <div class="wrapperFlexAlignCenter">
+                        <!-- The Input -->
+                        <lightning-input lwc:if={isContact} type="text" name="conLead" label="search box"
+                            placeholder="Search Contacts here..." variant="label-hidden" value={searchConLeadInput}
+                            onchange={onSearchInputChange}></lightning-input>
+                        <lightning-input lwc:if={isLead} type="text" name="conLead" label="search box"
+                            placeholder="Search Leads here..." variant="label-hidden" value={searchConLeadInput}
+                            onchange={onSearchInputChange}></lightning-input>
+                    </div>
+                    <div>
+                        <lightning-icon icon-name='utility:search' alternative-text='search' size='x-small'
+                            title='search'></lightning-icon>
+                    </div>
+                </div>
+
+                <!-- Showing All Result Here -->
+                <div class="searchListBody">
+
+                    <!-- Showing Contact Results Only -->
+                    <template lwc:if={isContact} for:each={contactSearchedOption} for:item="item" for:index="index">
+                    <div data-recordid={item.Id}  data-index={index}  data-contactname={item.Name}  data-parentaccountname={item.AccountName} class="searchListEachItem" key={item.Id} title={item.AccountName} onclick={handleContactsSelection}>
+                        <div>
+                            <lightning-icon icon-name="standard:contact"  alternative-text="contact logo"  size="medium" variant="standard" ></lightning-icon>
+                        </div>
+                        <div>
+                            <div >{item.Name}</div>
+                            <div >{item.AccountName}</div>
+                        </div>
+                    </div>    
+                </template>
+
+
+                <!-- Showing Lead Results Only -->
+                    <template lwc:if={isLead} for:each={leadSearchedOption} for:item="item" for:index="index">
+                    <div data-recordid={item.Id} data-leadtitle={item.Title} data-leadname={item.Name} data-index={index} class="searchListEachItem" key={item.Id} title={item.Name} onclick={handleLeadsSelection}>
+                        <div>
+                            <lightning-icon icon-name="standard:lead"  alternative-text="lead logo"  size="medium" variant="standard" ></lightning-icon>
+                        </div>
+                        <div>
+                            <div >{item.Name}</div>
+                            <div >{item.Title}</div>
+                        </div>
+                    </div>
+                </template>
+
+
+                </div>
+                
+                <div class="paddingFlexPill">
+                    <template  lwc:if={isContact} for:each={pillListForSelectedMultipleContactsOrLeads} for:item="item" for:index="index">
+                        <div key={item.Id} >
+                            <lightning-pill label={item.contactName} onremove={handleSelectedContactLeadRemove} data-recordid={item.Id} data-index={index} >
+                    <lightning-icon icon-name="standard:contact" alternative-text="contact icon"  ></lightning-icon>
+                </lightning-pill>
+                        </div>
+                    
+                </template>
+                    <template lwc:if={isLead} for:each={pillListForSelectedMultipleContactsOrLeads} for:item="item"  for:index="index">
+                    <lightning-pill label={item.leadName} key={item.Id} onremove={handleSelectedContactLeadRemove} data-recordid={item.Id} data-index={index} >
+                    <lightning-icon icon-name="standard:lead" alternative-text="lead icon"  ></lightning-icon>
+                </lightning-pill>
+                </template>
+                </div>
+                
+            </div>
+
+            <!-- Related to -->
+            <div>
+                <label>Related To</label>
+                <div class="flexAlignCenterWithBorder">
+
+                    <div>
+                        <lightning-icon icon-name="standard:account" alternative-text="account image"></lightning-icon>
+                    </div>
+                    <div class="wrapperFlexAlignCenter">
+                        <!-- The Input -->
+                        <lightning-input type="text" label="search box" name="account"
+                            placeholder="Search Accounts here!" variant="label-hidden" value={searchAccountInput}
+                            onchange={onSearchInputChange}></lightning-input>
+                    </div>
+                    <div>
+                        <lightning-icon icon-name='utility:search' alternative-text='search' size='x-small'
+                            title='search'></lightning-icon>
+                    </div>
+
+                </div>
+
+                <!-- Showing Account Results Only -->
+                    <div class="searchListBody">
+                        <template lwc:if={isAccount} for:each={accountSearchedOption} for:item="item" for:index="index">
+                        <div data-recordid={item.Id} data-index={index}  data-accountname={item.Name} class="searchListEachItem" key={item.Id} title={item.Name} onclick={handleAccountsSelection}>
+                            <div>
+                                <lightning-icon icon-name="standard:account"  alternative-text="account logo"  size="medium" variant="standard" ></lightning-icon>
+                            </div>
+                            <div>
+                                <div >{item.Name}</div>
+                            </div>
+                        </div>
+                    </template>
+                    </div>
+                    
+            </div>
+
+            <!-- Assigend to -->
+            <div>
+                <label>Assigned To</label>
+                <div class="flexAlignCenterWithBorder">
+                    <div>
+                        <lightning-icon icon-name='utility:profile_alt' alternative-text='profile_alt' size='medium'
+                            title='profile_alt'></lightning-icon>
+                    </div>
+                    <div class="wrapperFlexAlignCenter">
+                        <!-- The Input -->
+                        <lightning-input type="text" disabled="true" name="ownerName" label="search box"
+                            variant="label-hidden" value={currentOwnerName}
+                            onchange={onSearchInputChange}></lightning-input>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Location -->
+        <div>
+            <lightning-input type="text" variant="standard" value={location} onchange={handleValueChange}
+                name="location" label="Location"></lightning-input>
+        </div>
+
+        <div>
+            <lightning-button variant="brand" label="Save" title="Save" onclick={handleEventSaveButton}></lightning-button>
+        </div>
+    </div>
+
+</template>
