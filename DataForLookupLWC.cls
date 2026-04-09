@@ -10,7 +10,11 @@ public with sharing class DataForLookupLWC {
         @AuraEnabled public String Name;
         @AuraEnabled public String AccountId;
         @AuraEnabled public String AccountName;
+        @AuraEnabled public String OwnerName;
+        @AuraEnabled public String OwnerId;
 
+
+        // wrapper class -> constructor for Multiple Search Results
         public ContactWrapper(String Id, String Title, String FirstName, String LastName, String AccountId, String AccountName)
         {
         this.Id = Id;
@@ -22,6 +26,17 @@ public with sharing class DataForLookupLWC {
         this.AccountName = AccountName;
         }
         
+
+        // wrapper class -> constructor for currently opened contact
+        public ContactWrapper(String Id, String FirstName, String LastName, String OwnerId, String OwnerName)
+        {
+        this.Id = Id;
+        this.Name = FirstName+' '+LastName;
+        this.OwnerId = OwnerId;
+        this.OwnerName = OwnerName;
+        }
+
+
     }
 
 
@@ -107,9 +122,12 @@ public with sharing class DataForLookupLWC {
 
     // Apex Class for Currently Opened Contact Details
     @AuraEnabled(cacheable=true)
-    public static List<Contact> getCurrentContactDetails(String recordId)
+    public static ContactWrapper getCurrentContactDetails(String recordId)
     {
-        return [select id, name, owner.name from contact where id =: recordId limit 1];
+        Contact openedContactRecord = [select id,firstName, lastName, owner.name, ownerId from contact where id =: recordId limit 1];
+        System.debug(openedContactRecord);
+        System.debug('OwnerId is: '+openedContactRecord.OwnerId);
+        return new ContactWrapper(openedContactRecord.Id,openedContactRecord.FirstName,openedContactRecord.LastName,openedContactRecord.OwnerId, openedContactRecord.Owner.Name);
     }
 
 }

@@ -3,13 +3,16 @@ import getContactListFromSearchInput from "@salesforce/apex/DataForLookupLWC.get
 import getLeadListFromSearchInput from "@salesforce/apex/DataForLookupLWC.getLeadListFromSearchInput";
 import getAccountListFromSearchInput from "@salesforce/apex/DataForLookupLWC.getAccountListFromSearchInput";
 import getCurrentContactDetails from "@salesforce/apex/DataForLookupLWC.getCurrentContactDetails";
+import createEvents from "@salesforce/apex/createEventForMultipleContactsOrLeads.createEvents";
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 export default class RecordPicker extends LightningElement {
 
     @api
     recordId;
 
-    currentOwnerName;
+    currentContactOwnerName;
+    currentContactOwnerId;
     searchConLeadInput = '';
     searchAccountInput = '';
     isContactOrLeadSelected = 'contact';
@@ -18,13 +21,17 @@ export default class RecordPicker extends LightningElement {
     isAccount = true;
     startDateTime;
     endDateTime;
-
+    selectedAccountName;
+    selectedAccountId;
+    isAccountSelectedFromSearch = false;
+    disableAccountSearch = false;
+    isSubjectOptionOpened = false;
     subjectOptions=[
-        {label:'Call',value:'call'},
-        {label:'Email',value:'email'},
-        {label:'Meeting',value:'meeting'},
-        {label:'Send Other/Quote',value:'send other/quote'},
-        {label:'Other',value:'other'}
+        {id: '0', label:'Call',value:'Call'},
+        {id: '1', label:'Email',value:'Email'},
+        {id: '2', label:'Meeting',value:'Meeting'},
+        {id: '3', label:'Send Other/Quote',value:'Send Other/Quote'},
+        {id: '4', label:'Other',value:'Other'}
     ]
 
     subjectSelectedValue='';
@@ -39,7 +46,7 @@ export default class RecordPicker extends LightningElement {
     contactSearchedOption=[];
     @track
     accountSearchedOption=[];
-
+    
     excludedIdInSearchForLeadOrContact=[];
 
     connectedCallback() {
@@ -54,7 +61,13 @@ export default class RecordPicker extends LightningElement {
         {
             console.log('Inside the wire > getCurrentContactDetails > data');
             console.log(data);
-            this.currentOwnerName = data[0].Owner.Name;
+            this.pillListForSelectedMultipleContactsOrLeads = [...this.pillListForSelectedMultipleContactsOrLeads,{Id: data.Id,contactName: data.Name}];
+            this.excludedIdInSearchForLeadOrContact = [...this.excludedIdInSearchForLeadOrContact,data.Id];
+            this.currentContactOwnerName = data.OwnerName;
+            // id and contact name and ownerID also returned;
+            this.currentContactOwnerId = data.OwnerId;
+            console.log("CurrentContactOwnerId: ",this.currentContactOwnerId);
+            
             
         }
 
@@ -72,17 +85,46 @@ export default class RecordPicker extends LightningElement {
         
         if(event.target.name === 'subject')
         {
-            this.subject = event.detail.value;
+            this.subjectSelectedValue = event.target.value;
         }
+        
+
         else if(event.target.name === 'allDayEvent')
         {
-            this.allDayEvent = event.target.value;
+            // console.log(event.target);
+            this.allDayEvent = event.target.checked;
+            console.log('All day event is; '+this.allDayEvent);
         }
-
         else if(event.target.name === 'location')
         {
             this.location = event.target.value;
         }
+        else if(event.target.name === 'startDateTime')
+        {
+            this.startDateTime = event.target.value;
+        }
+        else if(event.target.name === 'endDateTime')
+        {
+            this.endDateTime = event.target.value;
+        }
+    }
+
+
+    handleSubjectFocus()
+    {
+        this.isSubjectOptionOpened = true;
+    }
+
+    handleSubjectBlur()
+    {
+        this.isSubjectOptionOpened = false;
+    }
+
+    handleSubjectOptionClicked(event)
+    {
+        this.subjectSelectedValue = event.currentTarget.dataset.value;
+        console.log(this.subjectSelectedValue);
+        this.isSubjectOptionOpened = false;
     }
 
 
@@ -192,7 +234,7 @@ export default class RecordPicker extends LightningElement {
         else if (event.target.name === 'account') {
             this.searchAccountInput = event.target.value;
             if (this.searchAccountInput.trim() != '') {
-                getAccountListFromSearchInput({ searchInput: this.searchConLeadInput })
+                getAccountListFromSearchInput({ searchInput: this.searchAccountInput })
                     .then((result) => {
                         console.log('Inside AccountListSearchInput > result');
                         console.log(result);
@@ -268,18 +310,62 @@ export default class RecordPicker extends LightningElement {
     handleAccountsSelection(event)
     {
         event.preventDefault();
-        let recordIdOfSelectedContact = event.currentTarget.dataset.recordid;
-        let accountName = event.currentTarget.dataset.accountname;
+        this.selectedAccountId = event.currentTarget.dataset.recordid;
+        this.selectedAccountName= event.currentTarget.dataset.accountname;
         let index = event.currentTarget.dataset.index;
+        this.accountSearchedOption = [];
+
+        this.searchAccountInput = '';
+        this.isAccountSelectedFromSearch=true;
+        this.disableAccountSearch = true;
+
+
 
     }
+    
+    handleSelectedAccountRemove(event)
+    {
+        event.preventDefault();
+        // event.currentTarget;
 
+        this.isAccountSelectedFromSearch = false;
+        this.disableAccountSearch = false;
+
+    }
 
     handleEventSaveButton(event)
     {
         event.preventDefault();
+        if(this.startDateTime!='' && this.endDateTime != '' && this.pillListForSelectedMultipleContactsOrLeads.length>0 && this.selectedAccountId != '')
+        {
+            // call apex method to create event for selected contacts or lead
+            createEvents({subject: this.subjectSelectedValue, startDateTime: this.startDateTime, endDateTime: this.endDateTime, isAllDayEvent: this.allDayEvent, contactOrLeadsList: this.excludedIdInSearchForLeadOrContact , relatedToAccount: this.selectedAccountId, assignedTo: this.currentContactOwnerId, location: this.location})
+            .then(({message, error, statusCode})=>{
+
+                if(statusCode[0] == '201')
+                {
+                console.log(message);
+                const event = new ShowToastEvent({ title: "Success!", message: message[0], variant: 'success'});
+                this.dispatchEvent(event);
+            }
+            else
+                {
+                    console.log(message);
+                    const event = new ShowToastEvent({ title: message[0], message: error[0], variant: 'error'});
+                    this.dispatchEvent(event);
+                }
+            })
+            .catch((error)=>{
+                const event = new ShowToastEvent({ title: "Error While Creating Events!", message: 'Something Went Wrong!', variant: 'warning'});
+                this.dispatchEvent(event);
+                console.log(error);
+                
+            })
+            .finally();
+        }
 
     }
+
 
 
 }

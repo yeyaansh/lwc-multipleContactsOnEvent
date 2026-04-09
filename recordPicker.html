@@ -3,25 +3,46 @@
     <div class="spaceAroundInputs">
         <!-- Subject -->
         <div>
-                <lightning-combobox name="subject" label="Subject" value={subjectSelectedValue} options={subjectOptions} onchange={handleValueChange} ></lightning-combobox>
+            <!-- <lightning-combobox name="subject" label="Subject" value={subjectSelectedValue} options={subjectOptions}
+                onchange={handleValueChange}></lightning-combobox> -->
+            <label>Subject</label>
+            <div class="flexSubjectAlign">
+                <div style="flex:1;">
+                    <lightning-input name="subject" type="text" variant="label-hidden" label="Subject" title="Subject" onchange={handleValueChange}
+                        value={subjectSelectedValue} onfocus={handleSubjectFocus} onblur={handleSubjectBlur}></lightning-input>
+                </div>
+                <div>
+                    <lightning-icon icon-name="utility:search" alternative-text="search icon" size="small"
+                        title="search subject"></lightning-icon>
+                </div>
+            </div>
+
+            <div lwc:if={isSubjectOptionOpened} class="searchListBody">
+                <template for:each={subjectOptions} for:item="item" for:index="index">
+                    <div key={item.id} data-value={item.value} class="flexAlignCenter" onmousedown={handleSubjectOptionClicked}>
+                        {item.label}
+                    </div>
+                </template>
+            </div>
+
         </div>
 
-        <!-- Start -->
+        <!-- Start DateTime if not AllDayEvent-->
         <div>
-            <lightning-input required="true" type="datetime" value={startDateTime} name="startTime"
+            <lightning-input required="true" type="datetime" value={startDateTime} name="startDateTime" onchange={handleValueChange}
                 label="Start"></lightning-input>
         </div>
 
-        <!-- End -->
+        <!-- End DateTime if not AllDayEvent-->
         <div>
-            <lightning-input value={endDateTime} required="true" type="datetime" name="endTime"
+            <lightning-input value={endDateTime} required="true" type="datetime" name="endDateTime" onchange={handleValueChange}
                 label="End"></lightning-input>
         </div>
 
         <!-- AllDayEvent -->
         <div>
-            <lightning-input type="checkbox" label="All Day Event" value={allDayEvent}
-                name="allDayEvent"></lightning-input>
+            <lightning-input type="checkbox" label="All Day Event" value={allDayEvent} name="allDayEvent"
+                onchange={handleValueChange}></lightning-input>
         </div>
 
 
@@ -64,50 +85,61 @@
 
                     <!-- Showing Contact Results Only -->
                     <template lwc:if={isContact} for:each={contactSearchedOption} for:item="item" for:index="index">
-                    <div data-recordid={item.Id}  data-index={index}  data-contactname={item.Name}  data-parentaccountname={item.AccountName} class="searchListEachItem" key={item.Id} title={item.AccountName} onclick={handleContactsSelection}>
-                        <div>
-                            <lightning-icon icon-name="standard:contact"  alternative-text="contact logo"  size="medium" variant="standard" ></lightning-icon>
+                        <div data-recordid={item.Id} data-index={index} data-contactname={item.Name}
+                            data-parentaccountname={item.AccountName} class="searchListEachItem" key={item.Id}
+                            title={item.AccountName} onclick={handleContactsSelection}>
+                            <div>
+                                <lightning-icon icon-name="standard:contact" alternative-text="contact logo"
+                                    size="medium" variant="standard"></lightning-icon>
+                            </div>
+                            <div>
+                                <div>{item.Name}</div>
+                                <div>{item.AccountName}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div >{item.Name}</div>
-                            <div >{item.AccountName}</div>
-                        </div>
-                    </div>    
-                </template>
+                    </template>
 
 
-                <!-- Showing Lead Results Only -->
+                    <!-- Showing Lead Results Only -->
                     <template lwc:if={isLead} for:each={leadSearchedOption} for:item="item" for:index="index">
-                    <div data-recordid={item.Id} data-leadtitle={item.Title} data-leadname={item.Name} data-index={index} class="searchListEachItem" key={item.Id} title={item.Name} onclick={handleLeadsSelection}>
-                        <div>
-                            <lightning-icon icon-name="standard:lead"  alternative-text="lead logo"  size="medium" variant="standard" ></lightning-icon>
+                        <div data-recordid={item.Id} data-leadtitle={item.Title} data-leadname={item.Name}
+                            data-index={index} class="searchListEachItem" key={item.Id} title={item.Name}
+                            onclick={handleLeadsSelection}>
+                            <div>
+                                <lightning-icon icon-name="standard:lead" alternative-text="lead logo" size="medium"
+                                    variant="standard"></lightning-icon>
+                            </div>
+                            <div>
+                                <div>{item.Name}</div>
+                                <div>{item.Title}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div >{item.Name}</div>
-                            <div >{item.Title}</div>
-                        </div>
-                    </div>
-                </template>
+                    </template>
 
 
                 </div>
-                
+
                 <div class="paddingFlexPill">
-                    <template  lwc:if={isContact} for:each={pillListForSelectedMultipleContactsOrLeads} for:item="item" for:index="index">
-                        <div key={item.Id} >
-                            <lightning-pill label={item.contactName} onremove={handleSelectedContactLeadRemove} data-recordid={item.Id} data-index={index} >
-                    <lightning-icon icon-name="standard:contact" alternative-text="contact icon"  ></lightning-icon>
-                </lightning-pill>
+                    <template lwc:if={isContact} for:each={pillListForSelectedMultipleContactsOrLeads} for:item="item"
+                        for:index="index">
+                        <div key={item.Id}>
+                            <lightning-pill label={item.contactName} onremove={handleSelectedContactLeadRemove}
+                                data-recordid={item.Id} data-index={index}>
+                                <lightning-icon icon-name="standard:contact"
+                                    alternative-text="contact icon"></lightning-icon>
+                            </lightning-pill>
                         </div>
-                    
-                </template>
-                    <template lwc:if={isLead} for:each={pillListForSelectedMultipleContactsOrLeads} for:item="item"  for:index="index">
-                    <lightning-pill label={item.leadName} key={item.Id} onremove={handleSelectedContactLeadRemove} data-recordid={item.Id} data-index={index} >
-                    <lightning-icon icon-name="standard:lead" alternative-text="lead icon"  ></lightning-icon>
-                </lightning-pill>
-                </template>
+
+                    </template>
+                    <template lwc:if={isLead} for:each={pillListForSelectedMultipleContactsOrLeads} for:item="item"
+                        for:index="index">
+                        <lightning-pill label={item.leadName} key={item.Id} onremove={handleSelectedContactLeadRemove}
+                            data-recordid={item.Id} data-index={index}>
+                            <lightning-icon icon-name="standard:lead" alternative-text="lead icon"></lightning-icon>
+                        </lightning-pill>
+                    </template>
                 </div>
-                
+
             </div>
 
             <!-- Related to -->
@@ -118,9 +150,9 @@
                     <div>
                         <lightning-icon icon-name="standard:account" alternative-text="account image"></lightning-icon>
                     </div>
-                    <div class="wrapperFlexAlignCenter">
+                    <div class="wrapperFlexAlignCenter" style="margin-right: .2rem;">
                         <!-- The Input -->
-                        <lightning-input type="text" label="search box" name="account"
+                        <lightning-input type="text" label="search box" name="account" disabled={disableAccountSearch}
                             placeholder="Search Accounts here!" variant="label-hidden" value={searchAccountInput}
                             onchange={onSearchInputChange}></lightning-input>
                     </div>
@@ -132,19 +164,37 @@
                 </div>
 
                 <!-- Showing Account Results Only -->
-                    <div class="searchListBody">
-                        <template lwc:if={isAccount} for:each={accountSearchedOption} for:item="item" for:index="index">
-                        <div data-recordid={item.Id} data-index={index}  data-accountname={item.Name} class="searchListEachItem" key={item.Id} title={item.Name} onclick={handleAccountsSelection}>
+                <div class="searchListBody">
+                    <template lwc:if={isAccount} for:each={accountSearchedOption} for:item="item" for:index="index">
+                        <div data-recordid={item.Id} data-index={index} data-accountname={item.Name}
+                            class="searchListEachItem" key={item.Id} title={item.Name}
+                            onclick={handleAccountsSelection}>
                             <div>
-                                <lightning-icon icon-name="standard:account"  alternative-text="account logo"  size="medium" variant="standard" ></lightning-icon>
+                                <lightning-icon icon-name="standard:account" alternative-text="account logo"
+                                    size="medium" variant="standard"></lightning-icon>
                             </div>
                             <div>
-                                <div >{item.Name}</div>
+                                <div>{item.Name}</div>
                             </div>
                         </div>
                     </template>
+                </div>
+
+                <div lwc:if={isAccountSelectedFromSearch} style="margin-top: .3rem;">
+                    <div title={selectedAccountName} class="flexAlignCenter" data-recordid={selectedAccountId}
+                        data-accountname={selectedAccountName}>
+                        <div>
+                            <lightning-icon icon-name="standard:account"
+                                alternative-text="account logo"></lightning-icon>
+                        </div>
+                        <div style="padding-left:.3rem;flex: 1;">{selectedAccountName}</div>
+                        <div onclick={handleSelectedAccountRemove}>
+                            <lightning-icon icon-name='utility:close' alternative-text='close' size="small"
+                                title='remove'></lightning-icon>
+                        </div>
                     </div>
-                    
+                </div>
+
             </div>
 
             <!-- Assigend to -->
@@ -158,7 +208,7 @@
                     <div class="wrapperFlexAlignCenter">
                         <!-- The Input -->
                         <lightning-input type="text" disabled="true" name="ownerName" label="search box"
-                            variant="label-hidden" value={currentOwnerName}
+                            variant="label-hidden" value={currentContactOwnerName}
                             onchange={onSearchInputChange}></lightning-input>
                     </div>
 
@@ -174,7 +224,8 @@
         </div>
 
         <div>
-            <lightning-button variant="brand" label="Save" title="Save" onclick={handleEventSaveButton}></lightning-button>
+            <lightning-button variant="brand" label="Save" title="Save"
+                onclick={handleEventSaveButton}></lightning-button>
         </div>
     </div>
 

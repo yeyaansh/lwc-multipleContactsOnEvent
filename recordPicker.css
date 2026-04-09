@@ -58,3 +58,24 @@
     flex-wrap: wrap;
     gap: .3rem;
 }
+
+.flexAlignCenter{
+    display: flex;
+    padding: 3px 6px;
+    align-items: center;
+    gap: .5rem;
+    background-color: white;
+    border: 1px solid transparent;
+}
+
+.flexAlignCenter:hover{
+    background-color: rgb(231, 244, 255);
+    cursor: pointer;
+}
+
+.flexSubjectAlign{
+    display: flex;
+    gap: .3rem;
+    padding: 3px 6px;
+    align-items: center;
+}
